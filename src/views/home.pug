@@ -7,9 +7,12 @@ html(lang="ko")
         title Zoom
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body 
+        ul
         header 
             h1 Zoom
         main
-            h2 Welcome to Zoom
+            form(action="")
+                input(type="text" placeholder='write a message', required) 
+                button Send
         footer 
         script(src="/public/js/app.js") 
