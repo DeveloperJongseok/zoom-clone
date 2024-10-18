@@ -7,11 +7,15 @@ html(lang="ko")
         title Zoom
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body 
-        ul
+        
         header 
             h1 Zoom
         main
-            form(action="")
+            form#username
+                input(type="text" placeholder='username', required) 
+                button Save
+            ul
+            form#message
                 input(type="text" placeholder='write a message', required) 
                 button Send
         footer 

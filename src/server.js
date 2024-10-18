@@ -22,13 +22,25 @@ const sockets = [];
 
 wss.on('connection', (socket) => {
   sockets.push(socket);
+  socket['username'] = 'Unknown';
   console.log('Connected to Browser');
   socket.on('close', () => {
     console.log('Disconnected from the Browser');
   });
-  socket.on('message', (message) => {
-    const messageString = message.toString('utf8');
-    sockets.forEach((aSocket) => aSocket.send(messageString));
+  socket.on('message', (msg) => {
+    const messageString = msg.toString('utf8');
+    const message = JSON.parse(messageString);
+    switch (message.type) {
+      case 'message':
+        sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.username}: ${message.payload}`)
+        );
+        break;
+      case 'username':
+        console.log(message);
+        socket['username'] = message.payload;
+        break;
+    }
   });
 });
 

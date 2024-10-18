@@ -1,23 +1,39 @@
-const message = document.querySelector('ul');
-const messageForm = document.querySelector('form');
+const messageList = document.querySelector('ul');
+const messageForm = document.getElementById('message');
+const usernameForm = document.getElementById('username');
 
 const socket = new WebSocket(`ws://${window.location.host}`);
+
+function translator(type, payload) {
+  const msg = { type, payload };
+  return JSON.stringify(msg);
+}
 
 socket.addEventListener('open', () => {
   console.log('Connected to Server');
 });
 
 socket.addEventListener('message', (message) => {
-  console.log(message.data);
+  const li = document.createElement('li');
+  li.innerText = message.data;
+  messageList.appendChild(li);
 });
 
 socket.addEventListener('close', () => {
   console.log('Disconnected from Server');
 });
 
+// Chat
 messageForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const input = messageForm.querySelector('input');
-  socket.send(input.value);
+  socket.send(translator('message', input.value));
+  input.value = '';
+});
+
+usernameForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const input = usernameForm.querySelector('input');
+  socket.send(translator('username', input.value));
   input.value = '';
 });
