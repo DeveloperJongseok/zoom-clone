@@ -43,15 +43,39 @@
 
 const socket = io();
 
+const enter = document.getElementById('enter');
+const enterForm = enter.querySelector('form');
 const room = document.getElementById('room');
 const roomForm = room.querySelector('form');
 
-roomForm.addEventListener('submit', (event) => {
+let roomName;
+
+room.hidden = true;
+
+function showRoom() {
+  enter.hidden = true;
+  room.hidden = false;
+  const h3 = room.querySelector('h3');
+  h3.innerText = roomName;
+}
+
+function addMessage(msg) {
+  const ul = room.querySelector('ul');
+  const li = document.createElement('li');
+
+  li.innerText = msg;
+  ul.appendChild(li);
+}
+
+enterForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const input = roomForm.querySelector('input');
-  socket.emit('enter_room', { payload: input.value }, () => {
-    console.log('hi server~');
-  });
+  const input = enterForm.querySelector('input');
+  socket.emit('enter_room', input.value, showRoom);
+  roomName = input.value;
   input.value = '';
+});
+
+socket.on('welcome', () => {
+  addMessage('Someone joined.');
 });
