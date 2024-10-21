@@ -34,6 +34,10 @@ function publicRooms() {
   return publicRoomList;
 }
 
+function countUser(room) {
+  return wsServer.sockets.adapter.rooms.get(room).size;
+}
+
 wsServer.on('connection', (socket) => {
   wsServer.sockets.emit('room_change', publicRooms());
   socket['username'] = 'Unknown';
@@ -44,14 +48,14 @@ wsServer.on('connection', (socket) => {
   socket.on('enter_room', (room, name, done) => {
     socket.join(room);
     socket['username'] = name;
-    done();
-    socket.to(room).emit('welcome', socket.username);
+    done(countUser(room));
+    socket.to(room).emit('welcome', socket.username, countUser(room));
     wsServer.sockets.emit('room_change', publicRooms());
   });
 
   socket.on('disconnecting', () => {
     socket.rooms.forEach((room) =>
-      socket.to(room).emit('bye', socket.username)
+      socket.to(room).emit('bye', socket.username, countUser(room) - 1)
     );
   });
 
