@@ -2,6 +2,7 @@ import express from 'express';
 // import WebSocket, { WebSocketServer } from 'ws';
 import { Server } from 'socket.io';
 import http from 'http';
+import { instrument } from '@socket.io/admin-ui';
 
 const app = express();
 
@@ -16,59 +17,69 @@ const handleListen = () => console.log('Listening on http://localhost:3000');
 // app.listen(3000, handleListen);
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer);
-
-function publicRooms() {
-  const {
-    sockets: {
-      adapter: { sids, rooms },
-    },
-  } = wsServer;
-
-  const publicRoomList = [];
-  rooms.forEach((_, key) => {
-    if (sids.get(key) === undefined) {
-      publicRoomList.push(key);
-    }
-  });
-  return publicRoomList;
-}
-
-function countUser(room) {
-  return wsServer.sockets.adapter.rooms.get(room).size;
-}
-
-wsServer.on('connection', (socket) => {
-  wsServer.sockets.emit('room_change', publicRooms());
-  socket['username'] = 'Unknown';
-  socket.onAny((event) => {
-    console.log(`Socket Event: ${event}`);
-  });
-
-  socket.on('enter_room', (room, name, done) => {
-    socket.join(room);
-    socket['username'] = name;
-    done(countUser(room));
-    socket.to(room).emit('welcome', socket.username, countUser(room));
-    wsServer.sockets.emit('room_change', publicRooms());
-  });
-
-  socket.on('disconnecting', () => {
-    socket.rooms.forEach((room) =>
-      socket.to(room).emit('bye', socket.username, countUser(room) - 1)
-    );
-  });
-
-  socket.on('disconnect', () => {
-    wsServer.sockets.emit('room_change', publicRooms());
-  });
-
-  socket.on('new_message', (room, msg, done) => {
-    socket.to(room).emit('new_message', `${socket.username}: ${msg}`);
-    done();
-  });
+const wsServer = new Server(httpServer, {
+  cors: {
+    origin: ['https://admin.socket.io'],
+    credentials: true,
+  },
+});
+instrument(wsServer, {
+  auth: false,
 });
 
+// NOTE: Chat [socket.io]
+// function publicRooms() {
+//   const {
+//     sockets: {
+//       adapter: { sids, rooms },
+//     },
+//   } = wsServer;
+
+//   const publicRoomList = [];
+//   rooms.forEach((_, key) => {
+//     if (sids.get(key) === undefined) {
+//       publicRoomList.push(key);
+//     }
+//   });
+//   return publicRoomList;
+// }
+
+// function countUser(room) {
+//   return wsServer.sockets.adapter.rooms.get(room).size;
+// }
+
+// wsServer.on('connection', (socket) => {
+//   wsServer.sockets.emit('room_change', publicRooms());
+//   socket['username'] = 'Unknown';
+//   socket.onAny((event) => {
+//     console.log(`Socket Event: ${event}`);
+//   });
+
+//   socket.on('enter_room', (room, name, done) => {
+//     socket.join(room);
+//     socket['username'] = name;
+//     done(countUser(room));
+//     socket.to(room).emit('welcome', socket.username, countUser(room));
+//     wsServer.sockets.emit('room_change', publicRooms());
+//   });
+
+//   socket.on('disconnecting', () => {
+//     socket.rooms.forEach((room) =>
+//       socket.to(room).emit('bye', socket.username, countUser(room) - 1)
+//     );
+//   });
+
+//   socket.on('disconnect', () => {
+//     wsServer.sockets.emit('room_change', publicRooms());
+//   });
+
+//   socket.on('new_message', (room, msg, done) => {
+//     socket.to(room).emit('new_message', `${socket.username}: ${msg}`);
+//     done();
+//   });
+// });
+
+// NOTE: Chat basic
 // const wss = new WebSocketServer({ server });
 
 // const sockets = [];

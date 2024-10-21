@@ -11,25 +11,24 @@ html(lang="ko")
         header 
             h1 Zoom
         main
-            //- form#username
-            //-     input(type="text" placeholder='username', required) 
-            //-     button Save
-            //- ul
-            //- form#message
-            //-     input(type="text" placeholder='write a message', required) 
-            //-     button Send
-            div#enter
-                form
-                    input(placeholder='room name' required type='text')#room_name
-                    input(placeholder='username' required type='text')#username
-                    button Enter
-            div#room
-                h3
-                ul
-                form
-                    input(placeholder='message' required type='text')
-                    button Send
-            h4 Other Rooms 
-                ul#room_list
+            //- NOTE: - Chat
+            //- div#enter
+            //-     form
+            //-         input(placeholder='room name' required type='text')#room_name
+            //-         input(placeholder='username' required type='text')#username
+            //-         button Enter
+            //- div#room
+            //-     h3
+            //-     ul
+            //-     form
+            //-         input(placeholder='message' required type='text')
+            //-         button Send
+            //- h4 Other Rooms 
+            //-     ul#room_list
+            div#stream
+                video#video(autoplay, playsinline, width='600', height='400')
+                button#mute Mute
+                button#camera Camera Off
+                select#cameras
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js") 
