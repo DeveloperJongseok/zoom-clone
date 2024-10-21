@@ -46,17 +46,40 @@ const socket = io();
 const enter = document.getElementById('enter');
 const enterForm = enter.querySelector('form');
 const room = document.getElementById('room');
-const roomForm = room.querySelector('form');
+const messageForm = room.querySelector('form');
 
 let roomName;
 
-room.hidden = true;
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector('input');
+  const msg = input.value;
+  socket.emit('new_message', roomName, msg, () => {
+    addMessage(`You: ${msg}`);
+  });
+  input.value = '';
+}
+
+function handleEnterRoom(event) {
+  event.preventDefault();
+
+  const roomInput = enterForm.querySelector('#room_name');
+  const usernameInput = enterForm.querySelector('#username');
+
+  roomName = roomInput.value;
+  socket.emit('enter_room', roomName, usernameInput.value, showRoom);
+
+  roomInput.value = '';
+  usernameInput.value = '';
+}
 
 function showRoom() {
   enter.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector('h3');
   h3.innerText = roomName;
+
+  messageForm.addEventListener('submit', handleMessageSubmit);
 }
 
 function addMessage(msg) {
@@ -67,15 +90,29 @@ function addMessage(msg) {
   ul.appendChild(li);
 }
 
-enterForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-
-  const input = enterForm.querySelector('input');
-  socket.emit('enter_room', input.value, showRoom);
-  roomName = input.value;
-  input.value = '';
+socket.on('welcome', (name) => {
+  addMessage(`${name} joined.`);
 });
 
-socket.on('welcome', () => {
-  addMessage('Someone joined.');
+socket.on('bye', (name) => {
+  addMessage(`${name} left.`);
 });
+
+socket.on('new_message', addMessage);
+
+socket.on('room_change', (rooms) => {
+  const roomList = document.getElementById('room_list');
+  roomList.innerHTML = '';
+  if (rooms.length === 0) {
+    return;
+  }
+
+  rooms.forEach((room) => {
+    const li = document.createElement('li');
+    li.innerText = room;
+    roomList.append(li);
+  });
+});
+
+room.hidden = true;
+enterForm.addEventListener('submit', handleEnterRoom);
