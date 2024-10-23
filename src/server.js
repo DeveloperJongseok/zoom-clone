@@ -17,15 +17,18 @@ const handleListen = () => console.log('Listening on http://localhost:3000');
 // app.listen(3000, handleListen);
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer, {
-  cors: {
-    origin: ['https://admin.socket.io'],
-    credentials: true,
-  },
-});
-instrument(wsServer, {
-  auth: false,
-});
+const wsServer = new Server(
+  httpServer
+  //     , {
+  //   cors: {
+  //     origin: ['https://admin.socket.io'],
+  //     credentials: true,
+  //   },
+  // });
+  // instrument(wsServer, {
+  //   auth: false,
+  // }
+);
 
 // NOTE: Chat [socket.io]
 // function publicRooms() {
@@ -108,4 +111,11 @@ instrument(wsServer, {
 //   });
 // });
 
+wsServer.on('connection', (socket) => {
+  socket.on('enter_room', (room, done) => {
+    socket.join(room);
+    done();
+    socket.to(room).emit('enter');
+  });
+});
 httpServer.listen(3000, handleListen);

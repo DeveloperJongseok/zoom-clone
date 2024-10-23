@@ -25,10 +25,16 @@ html(lang="ko")
             //-         button Send
             //- h4 Other Rooms 
             //-     ul#room_list
-            div#stream
-                video#video(autoplay, playsinline, width='600', height='400')
-                button#mute Mute
-                button#camera Camera Off
-                select#cameras
+            div#enter
+                form
+                    input(placeholder='room name' required type='text')#room_name
+                    button Enter
+            div#room
+            div#call(hidden)
+                div#stream
+                    video#video(autoplay, playsinline, width='600', height='400')
+                    button#mute Mute
+                    button#camera Camera Off
+                    select#cameras
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js") 

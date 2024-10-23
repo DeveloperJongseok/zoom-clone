@@ -130,10 +130,12 @@ const video = document.getElementById('video');
 const muteBtn = document.getElementById('mute');
 const cameraBtn = document.getElementById('camera');
 const cameraSelect = document.getElementById('cameras');
+const call = document.getElementById('call');
 
 let stream;
 let muted = false;
 let cameraOff = false;
+let roomName;
 
 async function getCameras() {
   try {
@@ -151,7 +153,6 @@ async function getCameras() {
       }
       cameraSelect.append(cameraOption);
     });
-    console.log(cameras);
   } catch (error) {
     console.log(error);
   }
@@ -206,8 +207,36 @@ async function handleCameraChange() {
   await getMedia(cameraSelect.value);
 }
 
-getMedia();
-
 muteBtn.addEventListener('click', handleMute);
 cameraBtn.addEventListener('click', handleCamera);
 cameraSelect.addEventListener('input', handleCameraChange);
+
+// Enter Form (join a room)
+
+const enter = document.getElementById('enter');
+const enterForm = enter.querySelector('form');
+
+function handleEnterRoom(event) {
+  event.preventDefault();
+  const input = enterForm.querySelector('input');
+  roomName = input.value;
+  socket.emit('enter_room', roomName, startMedia);
+
+  input.value = '';
+}
+
+function startMedia() {
+  enter.hidden = true;
+  call.hidden = false;
+  getMedia();
+}
+
+call.hidden = true;
+
+enterForm.addEventListener('submit', handleEnterRoom);
+
+// Socket Code
+
+socket.on('enter', () => {
+  console.log('Someone Joined.');
+});
