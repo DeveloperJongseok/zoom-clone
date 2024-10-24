@@ -3,6 +3,7 @@ import express from 'express';
 import { Server } from 'socket.io';
 import http from 'http';
 import { instrument } from '@socket.io/admin-ui';
+import { off } from 'process';
 
 const app = express();
 
@@ -112,10 +113,21 @@ const wsServer = new Server(
 // });
 
 wsServer.on('connection', (socket) => {
-  socket.on('enter_room', (room, done) => {
+  socket.on('enter_room', (room) => {
     socket.join(room);
-    done();
     socket.to(room).emit('enter');
+  });
+
+  socket.on('offer', (offer, room) => {
+    socket.to(room).emit('offer', offer);
+  });
+
+  socket.on('answer', (answer, room) => {
+    socket.to(room).emit('answer', answer);
+  });
+
+  socket.on('ice', (ice, room) => {
+    socket.to(room).emit('ice', ice);
   });
 });
 httpServer.listen(3000, handleListen);

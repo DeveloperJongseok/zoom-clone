@@ -36,5 +36,9 @@ html(lang="ko")
                     button#mute Mute
                     button#camera Camera Off
                     select#cameras
+                div
+                    video#peer_stream(autoplay, playsinline, width='600', height='400')
+                
+
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js") 
