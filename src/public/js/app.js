@@ -137,6 +137,7 @@ let muted = false;
 let cameraOff = false;
 let roomName;
 let peerConnection;
+let dataChannel;
 
 async function getCameras() {
   try {
@@ -249,6 +250,10 @@ enterForm.addEventListener('submit', handleEnterRoom);
 
 // offer
 socket.on('enter', async () => {
+  dataChannel = peerConnection.createDataChannel('chat');
+  dataChannel.addEventListener('message', (event) => {
+    console.log(event.data);
+  });
   const offer = await peerConnection.createOffer();
   peerConnection.setLocalDescription(offer);
   socket.emit('offer', offer, roomName);
@@ -257,6 +262,12 @@ socket.on('enter', async () => {
 
 // answer
 socket.on('offer', async (offer) => {
+  peerConnection.addEventListener('datachannel', (event) => {
+    dataChannel = event.channel;
+    dataChannel.addEventListener('message', (event) => {
+      console.log(event.data);
+    });
+  });
   peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
   peerConnection.setLocalDescription(answer);
@@ -285,12 +296,29 @@ function handleIceCandidate(data) {
 function handleAddStream(data) {
   const peerStream = document.getElementById('peer_stream');
   peerStream.srcObject = data.stream;
-  console.log('got an event from peer');
+}
+
+function handleTrack(data) {
+  const peerStream = document.getElementById('peer_stream');
+  peerStream.srcObject = data.stream;
 }
 
 function connection() {
-  peerConnection = new RTCPeerConnection();
+  peerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          'stun:stun.l.google.com:19302',
+          'stun:stun1.l.google.com:19302',
+          'stun:stun2.l.google.com:19302',
+          'stun:stun3.l.google.com:19302',
+          'stun:stun4.l.google.com:19302',
+        ],
+      },
+    ],
+  });
   peerConnection.addEventListener('icecandidate', handleIceCandidate);
   peerConnection.addEventListener('addstream', handleAddStream);
+  //   peerConnection.addEventListener('track', handleTrack);
   stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
 }
